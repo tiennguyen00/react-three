@@ -83,6 +83,7 @@ const Balls = () => {
         friction={options.friction}
         linearDamping={options.damping}
         angularDamping={options.damping}
+        colliders="ball"
       >
         <instancedMesh castShadow receiveShadow args={[(ballGLB as any)?.nodes.ball.geometry, undefined, count]}>
           <meshStandardMaterial
@@ -92,7 +93,6 @@ const Balls = () => {
             envMapIntensity={options.envMapIntensity}
           />
         </instancedMesh>
-        <BallCollider args={[1]} />
       </InstancedRigidBodies>
     </>
   );
