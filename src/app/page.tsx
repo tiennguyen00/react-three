@@ -13,6 +13,7 @@ export default function Home() {
           position: [10, 0, 0],
         }}
       >
+        <axesHelper />
         <Container />
       </Canvas>
     </div>

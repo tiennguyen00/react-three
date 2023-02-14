@@ -18,5 +18,6 @@
     "typescript",
     "typescriptreact"
   ],
-  "editor.formatOnPaste": true
+  "editor.formatOnPaste": true,
+  "typescript.enablePromptUseWorkspaceTsdk": true
 }
