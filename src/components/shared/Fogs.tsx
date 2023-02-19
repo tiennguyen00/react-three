@@ -16,4 +16,4 @@ const Fogs = () => {
   );
 };
 
-export default Fogs;
+export { Fogs };

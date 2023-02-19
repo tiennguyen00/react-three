@@ -3,7 +3,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { BallCollider, InstancedRigidBodies, RigidBody } from "@react-three/rapier";
 import { useControls } from "leva";
 import { useMemo, useRef, useState } from "react";
-import { Vector3 } from "three";
+import { Vector3, MeshStandardMaterial } from "three";
 
 const Balls = () => {
   const ballGLB = useGLTF("models/ball.glb");
@@ -40,6 +40,13 @@ const Balls = () => {
     metalness: { value: 1, min: 0, max: 1 },
     damping: { value: 1, min: 0, max: 1 },
     envMapIntensity: { value: 2.5, min: 0, max: 5 },
+  });
+
+  const material = new MeshStandardMaterial({
+    vertexColors: true,
+    roughness: options.roughness,
+    metalness: options.metalness,
+    envMapIntensity: options.envMapIntensity,
   });
 
   useFrame((state) => {
@@ -81,21 +88,14 @@ const Balls = () => {
         instances={transforms}
         restitution={options.restitution}
         friction={options.friction}
-        linearDamping={options.damping}
+        linearDamping={options.damping} // The linear damping coefficient of this rigid-body
         angularDamping={options.damping}
         colliders="ball"
       >
-        <instancedMesh castShadow receiveShadow args={[(ballGLB as any)?.nodes.ball.geometry, undefined, count]}>
-          <meshStandardMaterial
-            vertexColors
-            roughness={options.roughness}
-            metalness={options.metalness}
-            envMapIntensity={options.envMapIntensity}
-          />
-        </instancedMesh>
+        <instancedMesh castShadow receiveShadow args={[(ballGLB as any)?.nodes.ball.geometry, material, count]} />
       </InstancedRigidBodies>
     </>
   );
 };
 
-export default Balls;
+export { Balls };

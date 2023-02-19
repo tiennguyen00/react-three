@@ -6,4 +6,4 @@ const Lights = () => {
   );
 };
 
-export default Lights;
+export { Lights };
