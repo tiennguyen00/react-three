@@ -8,9 +8,9 @@ const DemoInuPage = () => {
   const models = useGLTF([
     "/models/inu/head.gltf",
     "/models/inu/cloth.gltf",
-    "/models/inu/hand.gltf",
+    "/models/inu/hands.gltf",
     "/models/inu/shoes.gltf",
-    "/models/inu/pant.gltf",
+    "/models/inu/pants.gltf",
   ]);
   const mixers: any = [];
 
