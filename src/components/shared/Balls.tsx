@@ -11,7 +11,8 @@ const Balls = () => {
   const {
     size: { width, height },
   } = useThree();
-  const [target] = useState(() => new Vector3());
+
+  const target = new Vector3();
 
   const intersectionPlane = useRef(null);
   const pusher = useRef(null);
