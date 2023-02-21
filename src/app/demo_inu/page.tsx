@@ -9,7 +9,7 @@ const DemoInuPage = () => {
   const options = useControls({
     Body_Parts: folder({
       head: {
-        value: "head_1",
+        value: "ball",
         options: Object.keys(dummyData.head),
       },
       cloth: {
@@ -34,10 +34,6 @@ const DemoInuPage = () => {
 
   useEffect(() => {
     selectBodyParts("head", options.head);
-    selectBodyParts("hands", options.hands);
-    selectBodyParts("pants", options.pants);
-    selectBodyParts("shoes", options.shoes);
-    selectBodyParts("cloth", options.cloth);
   }, [options]);
 
   // const mixers: any = [];
