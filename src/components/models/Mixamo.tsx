@@ -23,7 +23,7 @@ const Mixamo = () => {
   });
 
   useEffect(() => {
-    selectBodyParts("hair", dummyData.hair[options.hair]);
+    selectBodyParts("hair", options.hair);
   }, [options.hair]);
   return <></>;
 };

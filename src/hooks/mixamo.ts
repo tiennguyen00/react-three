@@ -13,23 +13,29 @@ type KeysType = keyof BodyPartsType;
 
 export const dummyData: BodyPartsType = {
   clothes: {
-    maid_dress: "models/mixamo/saber_dress.gltf",
-    suit: "models/mixamo/saber_suit.gltf",
+    maid_dress: "models/mixamo/saber-dress-mixamo/saber-dress.gltf",
+    suit: "models/mixamo/saber-suit/saber-suit.gltf",
   },
   hair: {
-    maid: "models/mixamo/saber_maid_hair.gltf",
-    lily: "models/mixamo/saber_lily_hair.gltf",
+    maid: "models/mixamo/saber-maid-hair-mixamo/saber-maid-hair.gltf",
+    lily: "models/mixamo/saber-lily-hair-sub-skeleton/saber-lily-hair-sub-skeleton.gltf",
   },
   face: {
-    saber: "models/mixamo/saber_face.gltf",
-    eriri: "models/mixamo/eriri_face.gltf",
+    saber: "models/mixamo/saber-face/saber-face.gltf",
+    eriri: "models/mixamo/saber-face/eriri-face-test.gltf",
   },
 
   instrument: {},
 };
 
 const useMixamo = () => {
-  const [curParts, setCurPart] = useState<BodyPartsType>();
+  const accessories = useRef<any>({
+    clothes: {},
+    hair: {},
+    face: {},
+    instrument: {},
+  });
+
   const curAccessories = useRef<Record<string, { name: string | null; gltf: GLTF | null }>>({
     clothes: {
       name: null,
@@ -41,13 +47,12 @@ const useMixamo = () => {
   });
 
   const isLoaded = (key: KeysType, value: string) => {
-    return value in curAccessories.current[key];
+    return value in accessories.current[key];
   };
 
   return {
-    curParts,
-    setCurPart,
     isLoaded,
+    accessories,
     curAccessories,
   };
 };
@@ -56,7 +61,7 @@ const useViewer = () => {
   const { scene } = useThree();
   const [skeletonMixer, setSkeletonMixer] = useState(null);
   const [skinMixer, setSkinMixer] = useState([]);
-  const { isLoaded, curAccessories } = useMixamo();
+  const { isLoaded, curAccessories, accessories } = useMixamo();
 
   const loader = new GLTFLoader();
   const dracoLoader = new DRACOLoader();
@@ -65,8 +70,9 @@ const useViewer = () => {
 
   const partOnLoad = (key: KeysType, value: string, data?: any) => {
     const cur = curAccessories.current[key];
+    console.log(cur, accessories);
     if (value === cur.name) {
-      console.log("Same load: ", key, value);
+      console.log("Same load: ", value, cur.name);
       return;
     }
 
@@ -90,14 +96,14 @@ const useViewer = () => {
       loader.load(
         uri,
         (gltf) => {
-          curAccessories.current[key] = {
-            name: value,
-            gltf: gltf,
+          accessories.current[key][value] = {
+            gltf,
           };
           partOnLoad(key, value, gltf);
+          console.log("Load successfully: ", value);
         },
         (xhr) => {
-          console.log("Loading: ", xhr.loaded);
+          console.warn("Loading: ", xhr.loaded);
         },
         (err) => {
           console.error(err);
