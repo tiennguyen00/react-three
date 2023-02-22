@@ -1,5 +1,7 @@
-import { useEffect, useRef } from "react";
-import { Mesh } from "three";
+import useInu from "@/app/demo_inu/useInu";
+import { useFrame } from "@react-three/fiber";
+import { useEffect, useRef, useState } from "react";
+import { AnimationClip, AnimationMixer, Group, Mesh } from "three";
 import { GLTF } from "three/examples/jsm/loaders/GLTFLoader";
 
 const Inu = ({ data }: { data: GLTF }) => {
@@ -16,20 +18,17 @@ const Inu = ({ data }: { data: GLTF }) => {
               mesh.material.forEach((e) => {
                 e.dispose();
               });
-            } else mesh.geometry.dispose();
+            } else mesh.material.dispose();
           }
         });
 
+        data.scene.parent?.remove(data.scene);
         data.scene.remove();
       }
     };
   }, [data]);
 
-  return (
-    <group scale={0.01}>
-      <primitive object={data?.scene ?? {}} />
-    </group>
-  );
+  return <primitive object={data?.scene ?? {}} />;
 };
 
 export default Inu;
