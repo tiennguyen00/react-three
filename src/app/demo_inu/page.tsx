@@ -1,17 +1,20 @@
 "use client";
 import InuPart from "@/components/models/Inu";
 import useAnimation, { dummyAnimationData } from "@/hooks/inu/useAnimation";
+import useCamera from "@/hooks/inu/useCamera";
 import useModel, { dummyData } from "@/hooks/inu/useModel";
-import { OrbitControls, Environment } from "@react-three/drei";
-import { useFrame } from "@react-three/fiber";
+import { OrbitControls, Environment, Plane } from "@react-three/drei";
+import { useFrame, useThree } from "@react-three/fiber";
 import { useControls, folder } from "leva";
 import { useEffect, useRef } from "react";
 import { AnimationClip, AnimationMixer, Group } from "three";
 
 const DemoInuPage = () => {
   const inuRef = useRef<Group>(null);
+  const { camera } = useThree();
   const { selectBodyParts, curBody } = useModel();
   const { selectAnimation, curAnimation, changeCharacterState } = useAnimation();
+  const { updateCameraTarget } = useCamera(camera);
 
   const mixers: AnimationMixer[] = [];
 
@@ -35,7 +38,10 @@ const DemoInuPage = () => {
 
   useFrame((_, delta) => {
     if (curBody && mixers.length === Object.keys(curBody).length) mixers.forEach((m) => m.update(delta));
-    if (inuRef.current) changeCharacterState(delta, inuRef.current);
+    if (inuRef.current) {
+      changeCharacterState(delta, inuRef.current);
+      updateCameraTarget(delta, inuRef.current);
+    }
   });
 
   // Controls panel
@@ -91,6 +97,9 @@ const DemoInuPage = () => {
       <color attach="background" args={["#E6E6FA"]} />
       <OrbitControls />
       <Environment preset="forest" />
+      <Plane rotation={[(-Math.PI * 1) / 2, 0, 0]} args={[10, 10]}>
+        <meshStandardMaterial color="blue" />
+      </Plane>
       <group scale={0.01} ref={inuRef}>
         <InuPart data={curBody?.head} />
         <InuPart data={curBody?.hands} />

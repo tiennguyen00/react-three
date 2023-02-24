@@ -15,7 +15,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <div className="w-screen h-screen">
           <Canvas
             camera={{
-              fov: 45,
+              fov: 75,
               near: 0.1,
               far: 50,
               position: [0, 3, 3],

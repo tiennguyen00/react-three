@@ -12,7 +12,7 @@ type KeyboardControls = "forward" | "backward" | "left" | "right" | "run" | "jum
 
 const loaderFBX = new FBXLoader();
 
-const activeAnimation: Record<KeyboardControls, boolean> = {
+let activeAnimation: Record<KeyboardControls, boolean> = {
   forward: false,
   backward: false,
   left: false,
@@ -25,9 +25,11 @@ const useAnimation = () => {
   const [curAnimation, setCurAnimation] = useState<{ name: string; data: Group }>();
   const animationsPool = useRef<any>({});
 
+  console.log(activeAnimation);
+
   // For character state
   const velocity = new Vector3(0, 0, 0);
-  const acceleration = new Vector3(1, 0.125, 10.0);
+  const acceleration = new Vector3(1, 0.125, 20.0);
   const decceleration = new Vector3(-0.0005, -0.0001, -5.0);
 
   // =======================
@@ -96,29 +98,6 @@ const useAnimation = () => {
     }
   }, []);
 
-  const handleKeyUp = useCallback((event: any) => {
-    switch (event.keyCode) {
-      case 87 || 38: //w or arrowup
-        activeAnimation.forward = false;
-        break;
-      case 65 || 37: //a or arrowleft
-        activeAnimation.left = false;
-        break;
-      case 83 || 40: //s or arrowdown
-        activeAnimation.backward = false;
-        break;
-      case 68 || 39: // d or arrowright
-        activeAnimation.right = false;
-        break;
-      case 32: //spacebar
-        activeAnimation.jump = false;
-        break;
-      case 16: // shift
-        activeAnimation.run = false;
-        break;
-    }
-  }, []);
-
   // movement
   const changeCharacterState = (delta: number, character: Group) => {
     const newVelocity = velocity;
@@ -183,6 +162,28 @@ const useAnimation = () => {
     // console.log(controlObject.position);
   };
 
+  const handleKeyUp = useCallback((event: any) => {
+    switch (event.keyCode) {
+      case 87 || 38: //w or arrowup
+        activeAnimation.forward = false;
+        break;
+      case 65 || 37: //a or arrowleft
+        activeAnimation.left = false;
+        break;
+      case 83 || 40: //s or arrowdown
+        activeAnimation.backward = false;
+        break;
+      case 68 || 39: // d or arrowright
+        activeAnimation.right = false;
+        break;
+      case 32: //spacebar
+        activeAnimation.jump = false;
+        break;
+      case 16: // shift
+        activeAnimation.run = false;
+        break;
+    }
+  }, []);
   useEffect(() => {
     document.addEventListener("keydown", handleKeyPress);
     document.addEventListener("keyup", handleKeyUp);
