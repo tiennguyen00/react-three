@@ -1,8 +1,6 @@
 import { useRef, useState } from "react";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader";
 import { GLTF, GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
-import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader";
-import { Group } from "three";
 
 interface BodyPartsType {
   head: Record<string, string>;
@@ -32,23 +30,13 @@ export const dummyData: BodyPartsType = {
   },
 };
 
-export const dummyAnimationData = {
-  "mixamo.com": "/models/inu/ani_mixamo.fbx",
-  "mixamo2.com": "/models/inu/ani_mixamo2.fbx",
-};
-
-type AnimationKeysType = keyof typeof dummyAnimationData;
-
 const loader = new GLTFLoader();
 const dracoLoader = new DRACOLoader();
 dracoLoader.setDecoderPath("/examples/jsm/libs/draco/");
 loader.setDRACOLoader(dracoLoader);
 
-const loaderFBX = new FBXLoader();
-
-const useInu = () => {
+const useModel = () => {
   const [curBody, setCurBody] = useState<Record<string, GLTF>>();
-  const [curAnimation, setCurAnimation] = useState<{ name: string; data: Group }>();
 
   const bodyPartsPool = useRef<any>({
     head: { name: null, data: null },
@@ -58,13 +46,8 @@ const useInu = () => {
     pants: { name: null, data: null },
   });
 
-  const animationsPool = useRef<any>({});
-
   const isLoadedBody = (type: KeysType, value: string) => {
     return value in bodyPartsPool.current[type];
-  };
-  const isLoadedAnimation = (type: AnimationKeysType) => {
-    return type in animationsPool.current;
   };
 
   const partOnLoad = (type: KeysType, data: GLTF) => {
@@ -72,13 +55,6 @@ const useInu = () => {
       ...prev,
       [type]: data,
     }));
-  };
-
-  const animationOnLoad = (type: string, data: Group) => {
-    setCurAnimation({
-      name: type,
-      data,
-    });
   };
 
   const selectBodyParts = (type: KeysType, value: string) => {
@@ -115,43 +91,10 @@ const useInu = () => {
     }
   };
 
-  const selectAnimation = (type: AnimationKeysType) => {
-    const uri = dummyAnimationData[type];
-    if (isLoadedAnimation(type)) {
-      console.log("Same load animation");
-      animationOnLoad(type, animationsPool.current[type]);
-    } else {
-      try {
-        const startTime = performance.now();
-        loaderFBX.load(
-          uri,
-          (fbx) => {
-            animationsPool.current[type] = fbx;
-
-            animationOnLoad(type, fbx);
-
-            const endTime = performance.now();
-            const loadTime = (endTime - startTime) / 1000;
-            console.log(`Model ${type} loaded in ${loadTime.toFixed(2)} seconds.`);
-          },
-          undefined,
-          (err) => {
-            console.error(err);
-          }
-        );
-      } catch (err) {
-        console.error("Something went wrong while load model: ", err);
-      }
-    }
-  };
-
   return {
-    bodyPartsPool,
     selectBodyParts,
     curBody,
-    curAnimation,
-    selectAnimation,
   };
 };
 
-export default useInu;
+export default useModel;

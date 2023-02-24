@@ -1,14 +1,18 @@
 "use client";
-import useInu, { dummyData, dummyAnimationData } from "@/app/demo_inu/useInu";
 import InuPart from "@/components/models/Inu";
+import useAnimation, { dummyAnimationData } from "@/hooks/inu/useAnimation";
+import useModel, { dummyData } from "@/hooks/inu/useModel";
 import { OrbitControls, Environment } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { useControls, folder } from "leva";
-import { useEffect } from "react";
-import { AnimationClip, AnimationMixer } from "three";
+import { useEffect, useRef } from "react";
+import { AnimationClip, AnimationMixer, Group } from "three";
 
 const DemoInuPage = () => {
-  const { selectBodyParts, curBody, selectAnimation, curAnimation } = useInu();
+  const inuRef = useRef<Group>(null);
+  const { selectBodyParts, curBody } = useModel();
+  const { selectAnimation, curAnimation, changeCharacterState } = useAnimation();
+
   const mixers: AnimationMixer[] = [];
 
   useEffect(() => {
@@ -18,7 +22,7 @@ const DemoInuPage = () => {
         const mixer = new AnimationMixer(m?.scene);
         const clip = AnimationClip.findByName(curAnimation?.data.animations, curAnimation?.data.animations[0].name);
         const action = mixer?.clipAction(clip);
-        action.play();
+        // action.play();
 
         mixers.push(mixer);
       });
@@ -31,6 +35,7 @@ const DemoInuPage = () => {
 
   useFrame((_, delta) => {
     if (curBody && mixers.length === Object.keys(curBody).length) mixers.forEach((m) => m.update(delta));
+    if (inuRef.current) changeCharacterState(delta, inuRef.current);
   });
 
   // Controls panel
@@ -86,7 +91,7 @@ const DemoInuPage = () => {
       <color attach="background" args={["#E6E6FA"]} />
       <OrbitControls />
       <Environment preset="forest" />
-      <group scale={0.01}>
+      <group scale={0.01} ref={inuRef}>
         <InuPart data={curBody?.head} />
         <InuPart data={curBody?.hands} />
         <InuPart data={curBody?.pants} />
