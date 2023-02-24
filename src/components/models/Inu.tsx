@@ -1,10 +1,8 @@
-import useInu from "@/app/demo_inu/useInu";
-import { useFrame } from "@react-three/fiber";
-import { useEffect, useRef, useState } from "react";
-import { AnimationClip, AnimationMixer, Group, Mesh } from "three";
+import { useEffect } from "react";
+import { Mesh } from "three";
 import { GLTF } from "three/examples/jsm/loaders/GLTFLoader";
 
-const Inu = ({ data }: { data: GLTF }) => {
+const InuPart = ({ data }: { data: GLTF | undefined }) => {
   useEffect(() => {
     return () => {
       // Clean up model
@@ -31,4 +29,4 @@ const Inu = ({ data }: { data: GLTF }) => {
   return <primitive object={data?.scene ?? {}} />;
 };
 
-export default Inu;
+export default InuPart;

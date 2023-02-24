@@ -1,6 +1,6 @@
 "use client";
 import useInu, { dummyData, dummyAnimationData } from "@/app/demo_inu/useInu";
-import Inu from "@/components/models/Inu";
+import InuPart from "@/components/models/Inu";
 import { OrbitControls, Environment } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { useControls, folder } from "leva";
@@ -8,33 +8,32 @@ import { useEffect } from "react";
 import { AnimationClip, AnimationMixer } from "three";
 
 const DemoInuPage = () => {
-  const { selectBodyParts, curModel, selectAnimation, curAnimation } = useInu();
-  const mixers: any[] = [];
+  const { selectBodyParts, curBody, selectAnimation, curAnimation } = useInu();
+  const mixers: AnimationMixer[] = [];
 
   useEffect(() => {
-    if (curModel && curAnimation) {
-      const models = [curModel["head"], curModel["cloth"], curModel["hands"], curModel["pants"], curModel["shoes"]];
+    if (curBody && curAnimation) {
+      const models = Object.keys(curBody).map((i) => curBody[i]);
       models.forEach((m) => {
-        if (m) {
-          const mixer = new AnimationMixer(m?.scene);
-          const clip = AnimationClip.findByName(curAnimation?.data.animations, "animation_0");
-          const action = mixer?.clipAction(clip);
-          action.play();
+        const mixer = new AnimationMixer(m?.scene);
+        const clip = AnimationClip.findByName(curAnimation?.data.animations, curAnimation?.data.animations[0].name);
+        const action = mixer?.clipAction(clip);
+        action.play();
 
-          mixers.push(mixer);
-        }
+        mixers.push(mixer);
       });
     }
 
     return () => {
       mixers.forEach((m) => m.stopAllAction());
     };
-  }, [curAnimation, curModel]);
+  }, [curAnimation, curBody]);
 
   useFrame((_, delta) => {
-    if (mixers) mixers.forEach((m) => m.update(delta));
+    if (curBody && mixers.length === Object.keys(curBody).length) mixers.forEach((m) => m.update(delta));
   });
 
+  // Controls panel
   useControls({
     Body_Parts: folder({
       head: {
@@ -74,7 +73,7 @@ const DemoInuPage = () => {
       },
     }),
     Animations: {
-      value: "animation_0",
+      value: "mixamo.com",
       options: Object.keys(dummyAnimationData),
       onChange: (v) => {
         selectAnimation(v);
@@ -88,11 +87,11 @@ const DemoInuPage = () => {
       <OrbitControls />
       <Environment preset="forest" />
       <group scale={0.01}>
-        <Inu data={curModel?.head as any} />
-        <Inu data={curModel?.hands as any} />
-        <Inu data={curModel?.pants as any} />
-        <Inu data={curModel?.cloth as any} />
-        <Inu data={curModel?.shoes as any} />
+        <InuPart data={curBody?.head} />
+        <InuPart data={curBody?.hands} />
+        <InuPart data={curBody?.pants} />
+        <InuPart data={curBody?.cloth} />
+        <InuPart data={curBody?.shoes} />
       </group>
     </>
   );

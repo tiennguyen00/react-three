@@ -1,6 +1,8 @@
 import { useRef, useState } from "react";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader";
 import { GLTF, GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
+import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader";
+import { Group } from "three";
 
 interface BodyPartsType {
   head: Record<string, string>;
@@ -31,7 +33,8 @@ export const dummyData: BodyPartsType = {
 };
 
 export const dummyAnimationData = {
-  animation_0: "/models/inu/anim_bone.gltf",
+  "mixamo.com": "/models/inu/ani_mixamo.fbx",
+  "mixamo2.com": "/models/inu/ani_mixamo2.fbx",
 };
 
 type AnimationKeysType = keyof typeof dummyAnimationData;
@@ -41,9 +44,11 @@ const dracoLoader = new DRACOLoader();
 dracoLoader.setDecoderPath("/examples/jsm/libs/draco/");
 loader.setDRACOLoader(dracoLoader);
 
+const loaderFBX = new FBXLoader();
+
 const useInu = () => {
-  const [curModel, setCurModel] = useState<Record<string, GLTF>>();
-  const [curAnimation, setCurAnimation] = useState<{ data: GLTF }>();
+  const [curBody, setCurBody] = useState<Record<string, GLTF>>();
+  const [curAnimation, setCurAnimation] = useState<{ name: string; data: Group }>();
 
   const bodyPartsPool = useRef<any>({
     head: { name: null, data: null },
@@ -53,24 +58,25 @@ const useInu = () => {
     pants: { name: null, data: null },
   });
 
-  const animationPool = useRef<any>({});
+  const animationsPool = useRef<any>({});
 
-  const isLoaded = (type: KeysType, value: string) => {
+  const isLoadedBody = (type: KeysType, value: string) => {
     return value in bodyPartsPool.current[type];
   };
   const isLoadedAnimation = (type: AnimationKeysType) => {
-    return type in bodyPartsPool.current;
+    return type in animationsPool.current;
   };
 
   const partOnLoad = (type: KeysType, data: GLTF) => {
-    setCurModel((prev) => ({
+    setCurBody((prev) => ({
       ...prev,
       [type]: data,
     }));
   };
 
-  const animationOnLoad = (data: GLTF) => {
+  const animationOnLoad = (type: string, data: Group) => {
     setCurAnimation({
+      name: type,
       data,
     });
   };
@@ -78,7 +84,7 @@ const useInu = () => {
   const selectBodyParts = (type: KeysType, value: string) => {
     const uri = dummyData[type][value];
 
-    if (isLoaded(type, value)) {
+    if (isLoadedBody(type, value)) {
       console.log("Same load ");
       partOnLoad(type, bodyPartsPool.current[type][value].data);
     } else {
@@ -112,17 +118,17 @@ const useInu = () => {
   const selectAnimation = (type: AnimationKeysType) => {
     const uri = dummyAnimationData[type];
     if (isLoadedAnimation(type)) {
-      console.log("Same load ");
-      animationOnLoad(animationPool.current[type]);
+      console.log("Same load animation");
+      animationOnLoad(type, animationsPool.current[type]);
     } else {
       try {
         const startTime = performance.now();
-        loader.load(
+        loaderFBX.load(
           uri,
-          (gltf) => {
-            animationPool.current[type] = gltf;
+          (fbx) => {
+            animationsPool.current[type] = fbx;
 
-            animationOnLoad(gltf);
+            animationOnLoad(type, fbx);
 
             const endTime = performance.now();
             const loadTime = (endTime - startTime) / 1000;
@@ -142,7 +148,7 @@ const useInu = () => {
   return {
     bodyPartsPool,
     selectBodyParts,
-    curModel,
+    curBody,
     curAnimation,
     selectAnimation,
   };
