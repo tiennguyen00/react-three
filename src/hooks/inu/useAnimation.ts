@@ -25,8 +25,6 @@ const useAnimation = () => {
   const [curAnimation, setCurAnimation] = useState<{ name: string; data: Group }>();
   const animationsPool = useRef<any>({});
 
-  console.log(activeAnimation);
-
   // For character state
   const velocity = new Vector3(0, 0, 0);
   const acceleration = new Vector3(1, 0.125, 20.0);

@@ -6,15 +6,17 @@ import useModel, { dummyData } from "@/hooks/inu/useModel";
 import { OrbitControls, Environment, Plane } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useControls, folder } from "leva";
-import { useEffect, useRef } from "react";
+import { Ref, useEffect, useRef } from "react";
 import { AnimationClip, AnimationMixer, Group } from "three";
 
 const DemoInuPage = () => {
   const inuRef = useRef<Group>(null);
+  const isDrag = useRef(false);
+  const orbitControlsRef = useRef(null);
   const { camera } = useThree();
   const { selectBodyParts, curBody } = useModel();
   const { selectAnimation, curAnimation, changeCharacterState } = useAnimation();
-  const { updateCameraTarget } = useCamera(camera);
+  const { updateCameraTarget } = useCamera(camera, orbitControlsRef.current, isDrag.current);
 
   const mixers: AnimationMixer[] = [];
 
@@ -95,7 +97,7 @@ const DemoInuPage = () => {
   return (
     <>
       <color attach="background" args={["#E6E6FA"]} />
-      <OrbitControls />
+      <OrbitControls ref={orbitControlsRef} />
       <Environment preset="forest" />
       <Plane rotation={[(-Math.PI * 1) / 2, 0, 0]} args={[10, 10]}>
         <meshStandardMaterial color="blue" />
