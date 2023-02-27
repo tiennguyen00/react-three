@@ -1,9 +1,29 @@
-"use client";
-import { Canvas } from "@react-three/fiber";
-import { Perf } from "r3f-perf";
-import "./globals.css";
+"use client"
+import useFullScreen from "@/hooks/inu/useFullScreen"
+import { Canvas } from "@react-three/fiber"
+import { Perf } from "r3f-perf"
+import { useEffect } from "react"
+import "./globals.css"
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const { node, exitFullScreen, handleFullScreen } = useFullScreen()
+
+  useEffect(() => {
+    if (!window) return
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "f") {
+        handleFullScreen()
+      }
+      if (e.key === "Escape") {
+        exitFullScreen()
+      }
+    })
+
+    return () => {
+      exitFullScreen()
+    }
+  }, [])
+
   return (
     <html lang="en">
       {/*
@@ -12,7 +32,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       */}
       <head />
       <body>
-        <div className="w-screen h-screen">
+        <div ref={node} className="w-screen h-screen">
           <Canvas
             camera={{
               fov: 75,
@@ -29,5 +49,5 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </div>
       </body>
     </html>
-  );
+  )
 }
