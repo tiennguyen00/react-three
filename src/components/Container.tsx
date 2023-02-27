@@ -1,7 +1,6 @@
 "use client";
-import { OrbitControls } from "@react-three/drei";
+import { Environment, OrbitControls } from "@react-three/drei";
 import React, { Suspense } from "react";
-import { enviromentPreset } from "@/constants";
 import { Perf } from "r3f-perf";
 import { Debug, Physics } from "@react-three/rapier";
 import { Balls, Fogs, Lights } from "./shared";
@@ -14,6 +13,7 @@ const Container = () => {
       <Lights />
       <Fogs />
       <World />
+      <Environment preset="city" />
       <OrbitControls />
 
       <Suspense>

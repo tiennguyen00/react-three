@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 import vertex from "raw-loader!@/glsl/gradient/vertex.glsl";
 import fragment from "raw-loader!@/glsl/gradient/fragment.glsl";
 import { Color } from "three";
@@ -23,11 +23,17 @@ declare module "@react-three/fiber" {
 }
 
 const Gradient = ({ options }: any) => {
+  const gradientRef = useRef(null);
+
   return (
     <>
       <mesh position={[0, 0, -2]}>
         <planeGeometry args={[2, 2, 1, 1]} />
-        <gradientMaterial uStartColor={new Color(options.startColor)} uEndColor={new Color(options.endColor)} />
+        <gradientMaterial
+          ref={gradientRef}
+          uStartColor={new Color(options.startColor)}
+          uEndColor={new Color(options.endColor)}
+        />
       </mesh>
     </>
   );

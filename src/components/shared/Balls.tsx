@@ -1,8 +1,8 @@
-import { useGLTF } from "@react-three/drei";
+import { Sphere, useGLTF } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import { BallCollider, InstancedRigidBodies, RigidBody } from "@react-three/rapier";
 import { useControls } from "leva";
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef } from "react";
 import { Vector3, MeshStandardMaterial } from "three";
 
 const Balls = () => {
@@ -37,8 +37,8 @@ const Balls = () => {
     restitution: { value: 0.5, min: 0, max: 1 },
     friction: { value: 0.5, min: 0, max: 1 },
     force: { value: 0.2, min: 0, max: 2 },
-    roughness: { value: 0.15, min: 0, max: 1 },
-    metalness: { value: 1, min: 0, max: 1 },
+    roughness: { value: 0.17, min: 0, max: 1 },
+    metalness: { value: 0.85, min: 0, max: 1 },
     damping: { value: 1, min: 0, max: 1 },
     envMapIntensity: { value: 2.5, min: 0, max: 5 },
   });
@@ -80,8 +80,8 @@ const Balls = () => {
         <meshBasicMaterial wireframe />
       </mesh>
 
-      <RigidBody ref={pusher} type="kinematicPosition" colliders={false} restitution={0}>
-        <BallCollider args={[2]} />
+      <RigidBody ref={pusher} type="kinematicPosition" colliders="ball" restitution={0}>
+        <Sphere />
       </RigidBody>
 
       <InstancedRigidBodies
