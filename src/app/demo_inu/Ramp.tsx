@@ -1,5 +1,6 @@
+import { useTrimesh } from "@react-three/cannon"
 import { useLoader } from "@react-three/fiber"
-import { RigidBody } from "@react-three/rapier"
+import { useRef } from "react"
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader"
 
 function Ramp() {
@@ -10,7 +11,16 @@ function Ramp() {
   const vertices = geometry.attributes.position.array
   const indices = geometry.index.array
 
-  return <RigidBody args={[vertices, indices]} mass={0} type="dynamic" />
+  const [ref] = useTrimesh(
+    () => ({
+      args: [vertices, indices],
+      mass: 0,
+      type: "Static",
+    }),
+    useRef(null)
+  )
+
+  return <></>
 }
 
 export default Ramp

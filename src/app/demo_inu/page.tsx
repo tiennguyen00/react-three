@@ -2,15 +2,13 @@
 import InuPart from "@/components/models/Inu"
 import useAnimation, { dummyAnimationData } from "@/hooks/inu/useAnimation"
 import useCamera from "@/hooks/inu/useCamera"
-import useControlsPlayer from "@/hooks/inu/useControlsPlayer"
 import useFullScreen from "@/hooks/inu/useFullScreen"
 import useModel, { dummyData } from "@/hooks/inu/useModel"
 import { OrbitControls, Environment, PointerLockControls, useKeyboardControls } from "@react-three/drei"
 import { useFrame, useThree } from "@react-three/fiber"
-import { Debug, Physics, RigidBody } from "@react-three/rapier"
 import { folder, useControls } from "leva"
-import { useEffect, useRef } from "react"
-import { AnimationClip, AnimationMixer, Group, Vector3 } from "three"
+import { useEffect, useRef, useState } from "react"
+import { AnimationClip, AnimationMixer, Camera, Group, Vector3 } from "three"
 import Ground from "./Ground"
 import Track from "./Track"
 
@@ -20,10 +18,23 @@ const DemoInuPage = () => {
   const orbitControlsRef = useRef(null)
   const { camera, gl } = useThree()
   const { selectBodyParts, curBody } = useModel()
+  const [thirdPerson, setThirdPerson] = useState(false)
+  const pointerRef = useRef<any>(null)
+  const [_, getKeys] = useKeyboardControls()
 
   useFullScreen(gl)
 
-  const { selectAnimation, curAnimation, changeCharacterState, modeControl } = useAnimation()
+  useEffect(() => {
+    const keyDownPressHandler = (e: any) => {
+      if (e.key === "t") {
+        setThirdPerson(!thirdPerson)
+      }
+    }
+    window.addEventListener("keydown", keyDownPressHandler)
+    return () => window.removeEventListener("keydown", keyDownPressHandler)
+  }, [thirdPerson])
+
+  const { selectAnimation, curAnimation, changeCharacterState } = useAnimation()
   const { updateCameraTarget } = useCamera(camera, orbitControlsRef.current, isDrag.current)
   const mixers: AnimationMixer[] = []
 
@@ -49,9 +60,23 @@ const DemoInuPage = () => {
     if (curBody && mixers.length === Object.keys(curBody).length) mixers.forEach((m) => m.update(delta))
     if (inuRef.current) {
       changeCharacterState(delta, inuRef.current)
-      if (!modeControl) {
+      if (!thirdPerson) {
         updateCameraTarget(delta, inuRef.current)
         return
+      }
+      if (!pointerRef.current || !pointerRef.current?.isLocked) return
+      const direction = new Vector3()
+      const frontVector = new Vector3(0, 0, -1).applyQuaternion(camera.quaternion).normalize()
+      const sideVector = new Vector3(-1, 0, 0).applyQuaternion(camera.quaternion).normalize()
+      const moveDirection = new Vector3()
+      const { forward, backward, left, right } = getKeys()
+      if (forward) moveDirection.add(frontVector)
+      if (backward) moveDirection.add(frontVector)
+      if (left) moveDirection.add(sideVector)
+      if (right) moveDirection.add(sideVector)
+      if (moveDirection.length() > 0) {
+        moveDirection.normalize().multiplyScalar(0.5)
+        camera.position.add(moveDirection.multiplyScalar(0.5))
       }
     }
   })
@@ -104,25 +129,22 @@ const DemoInuPage = () => {
     },
   })
   return (
-    <Physics gravity={[0, -9.8, 0]}>
-      <Debug />
+    <>
       <color attach="background" args={["#E6E6FA"]} />
-      {modeControl ? <PointerLockControls /> : <OrbitControls ref={orbitControlsRef} />}
+      {thirdPerson ? <PointerLockControls ref={pointerRef} /> : <OrbitControls ref={orbitControlsRef} />}
       <Environment preset="forest" />
       <group scale={[5, 5, 5]}>
         <Track />
         <Ground />
       </group>
-      <RigidBody type="dynamic">
-        <group scale={0.01} ref={inuRef}>
-          <InuPart data={curBody?.head} />
-          <InuPart data={curBody?.hands} />
-          <InuPart data={curBody?.pants} />
-          <InuPart data={curBody?.cloth} />
-          <InuPart data={curBody?.shoes} />
-        </group>
-      </RigidBody>
-    </Physics>
+      <group scale={0.01} ref={inuRef}>
+        <InuPart data={curBody?.head} />
+        <InuPart data={curBody?.hands} />
+        <InuPart data={curBody?.pants} />
+        <InuPart data={curBody?.cloth} />
+        <InuPart data={curBody?.shoes} />
+      </group>
+    </>
   )
 }
 

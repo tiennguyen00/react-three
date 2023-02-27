@@ -15,7 +15,6 @@ const loaderFBX = new FBXLoader()
 const useAnimation = () => {
   const [curAnimation, setCurAnimation] = useState<{ name: string; data: Group }>()
   const animationsPool = useRef<any>({})
-  const [modeControl, setModeControl] = useState(false)
   const [_, getKeys] = useKeyboardControls()
   // For character state
   const velocity = new Vector3(0, 0, 0)
@@ -64,10 +63,9 @@ const useAnimation = () => {
       }
     }
   }
-  console.log("mode", modeControl)
   // movement
   const changeCharacterState = (delta: number, character: Group) => {
-    const { backward, leftward, rightward, forward, jump, run, mode } = getKeys()
+    const { backward, leftward, rightward, forward, jump, run } = getKeys()
 
     const newVelocity = velocity
     const frameDecceleration = new Vector3(
@@ -87,16 +85,6 @@ const useAnimation = () => {
     const _R = controlObject.quaternion.clone()
 
     const acc = acceleration.clone()
-    if (mode) {
-      const timer = setTimeout(() => {
-        setModeControl((v) => !v)
-      }, 1000)
-
-      return () => clearTimeout(timer)
-      const speed = 10
-    }
-
-    if (modeControl) return
 
     if (run) {
       acc.multiplyScalar(2.0)
@@ -154,7 +142,6 @@ const useAnimation = () => {
   }
 
   return {
-    modeControl,
     curAnimation,
     selectAnimation,
     changeCharacterState,

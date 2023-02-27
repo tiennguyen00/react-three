@@ -1,5 +1,6 @@
 "use client"
 
+import { Physics } from "@react-three/cannon"
 import { KeyboardControls } from "@react-three/drei"
 import { Canvas } from "@react-three/fiber"
 import { Perf } from "r3f-perf"
@@ -24,7 +25,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               { name: "rightward", keys: ["ArrowRight", "KeyD"] },
               { name: "jump", keys: ["Space"] },
               { name: "run", keys: ["Shift"] },
-              { name: "mode", keys: ["KeyC"] },
             ]}
           >
             <Canvas
@@ -36,8 +36,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 frustumCulled: true,
               }}
             >
+              <Physics broadphase="SAP" gravity={[0, -2.6, 0]}>
+                {children}
+              </Physics>
               <Perf position="top-left" />
-              {children}
             </Canvas>
           </KeyboardControls>
         </div>

@@ -1,11 +1,19 @@
+import { usePlane } from "@react-three/cannon"
 import { MeshReflectorMaterial } from "@react-three/drei"
 import { useLoader } from "@react-three/fiber"
-import { RigidBody } from "@react-three/rapier"
 import { useEffect, useRef } from "react"
 import { BufferAttribute, Mesh } from "three"
 import { TextureLoader } from "three/src/loaders/TextureLoader"
 
 function Ground() {
+  const [ref] = usePlane(
+    () => ({
+      type: "Static",
+      rotation: [-Math.PI / 2, 0, 0],
+    }),
+    useRef(null)
+  )
+
   const gridMap = useLoader(TextureLoader, "/textures/grid.png")
 
   const aoMap = useLoader(TextureLoader, "/textures/ground-ao.png")
@@ -32,7 +40,7 @@ function Ground() {
   }, [])
 
   return (
-    <RigidBody rotation={[0, 0, 0]} type="dynamic">
+    <>
       <mesh ref={meshRef2} position={[-2.285, -0.01, -1.325]} rotation-x={-Math.PI * 0.5}>
         <planeGeometry args={[12, 12]} />
         <meshBasicMaterial opacity={0.325} alphaMap={gridMap} transparent={true} color={"white"} />
@@ -61,7 +69,7 @@ function Ground() {
           reflectorOffset={0.02} // Offsets the virtual camera that projects the reflection. Useful when the reflective
         ></MeshReflectorMaterial>
       </mesh>
-    </RigidBody>
+    </>
   )
 }
 
