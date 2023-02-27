@@ -1,10 +1,10 @@
-"use client";
+"use client"
 
-import { KeyboardControls } from "@react-three/drei";
-import { Canvas } from "@react-three/fiber";
-import { Perf } from "r3f-perf";
+import { KeyboardControls } from "@react-three/drei"
+import { Canvas } from "@react-three/fiber"
+import { Perf } from "r3f-perf"
 
-import "./globals.css";
+import "./globals.css"
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -24,6 +24,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               { name: "rightward", keys: ["ArrowRight", "KeyD"] },
               { name: "jump", keys: ["Space"] },
               { name: "run", keys: ["Shift"] },
+              { name: "mode", keys: ["KeyC"] },
             ]}
           >
             <Canvas
@@ -42,5 +43,5 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </div>
       </body>
     </html>
-  );
+  )
 }
