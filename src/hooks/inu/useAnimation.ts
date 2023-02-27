@@ -1,5 +1,5 @@
 import { useKeyboardControls } from "@react-three/drei";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { Group, Quaternion, Vector3 } from "three";
 import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader";
 
@@ -12,15 +12,15 @@ type AnimationKeysType = keyof typeof dummyAnimationData;
 
 const loaderFBX = new FBXLoader();
 
-const useAnimation = (rigidBodyRef: any) => {
+const useAnimation = () => {
   const [curAnimation, setCurAnimation] = useState<{ name: string; data: Group }>();
   const animationsPool = useRef<any>({});
   const [_, getKeys] = useKeyboardControls();
 
   // For character state
   const velocity = new Vector3(0, 0, 0);
-  const acceleration = new Vector3(0.125, 60.0, 20.0);
-  const decceleration = new Vector3(-0.0005, -8.0, -5.0);
+  const acceleration = new Vector3(1, 0.125, 20.0);
+  const decceleration = new Vector3(-0.0005, -0.0001, -5.0);
 
   // =======================
 
@@ -98,9 +98,7 @@ const useAnimation = (rigidBodyRef: any) => {
       newVelocity.z -= acc.z * delta;
     }
     if (jump) {
-      // newVelocity.y += acc.y * delta;
-      console.log("click");
-      rigidBodyRef.applyImpulse({ x: 0, y: 2, z: 0 });
+      newVelocity.y += acc.y * delta;
     }
     if (leftward) {
       _A.set(0, 1, 0);
@@ -113,16 +111,18 @@ const useAnimation = (rigidBodyRef: any) => {
       _R.multiply(_Q);
     }
 
-    controlObject.quaternion.copy(_R);
+    if (jump && Math.abs(velocity.y) < 0.01) {
+      newVelocity.y += 0.001;
+      controlObject.position.y += 0.1;
+    }
 
-    const oldPosition = new Vector3();
-    oldPosition.copy(controlObject.position);
+    controlObject.quaternion.copy(_R);
 
     const moveForward = new Vector3(0, 0, 1);
     moveForward.applyQuaternion(controlObject.quaternion);
     moveForward.normalize();
 
-    const sideways = new Vector3(1, 0, 0);
+    const sideways = new Vector3(0, 0, 1);
     sideways.applyQuaternion(controlObject.quaternion);
     sideways.normalize();
 

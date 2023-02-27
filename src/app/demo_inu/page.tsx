@@ -2,23 +2,27 @@
 import InuPart from "@/components/models/Inu";
 import useAnimation, { dummyAnimationData } from "@/hooks/inu/useAnimation";
 import useCamera from "@/hooks/inu/useCamera";
+import useFullScreen from "@/hooks/inu/useFullScreen";
 import useModel, { dummyData } from "@/hooks/inu/useModel";
-import { OrbitControls, Environment, Plane, KeyboardControls } from "@react-three/drei";
+import { OrbitControls, Environment } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
-import { Debug, Physics, RigidBody, useRapier } from "@react-three/rapier";
+import { Debug, Physics, RigidBody } from "@react-three/rapier";
 import { useControls, folder } from "leva";
-import { Ref, useEffect, useRef } from "react";
-import { AnimationClip, AnimationMixer, Group, Vector2, Vector3 } from "three";
+import { useEffect, useRef } from "react";
+import { AnimationClip, AnimationMixer, Group } from "three";
+import Ground from "./Ground";
+import Track from "./Track";
 
 const DemoInuPage = () => {
   const inuRef = useRef<Group>(null);
-  const rigidBodyRef = useRef<any>(null);
-
   const isDrag = useRef(false);
   const orbitControlsRef = useRef(null);
-  const { camera } = useThree();
+  const { camera, gl } = useThree();
   const { selectBodyParts, curBody } = useModel();
-  const { selectAnimation, curAnimation, changeCharacterState } = useAnimation(rigidBodyRef.current);
+
+  useFullScreen(gl);
+
+  const { selectAnimation, curAnimation, changeCharacterState } = useAnimation();
   const { updateCameraTarget } = useCamera(camera, orbitControlsRef.current, isDrag.current);
 
   const mixers: AnimationMixer[] = [];
@@ -98,36 +102,25 @@ const DemoInuPage = () => {
   });
 
   return (
-    <>
+    <Physics gravity={[0, -9.8, 0]}>
+      <Debug />
       <color attach="background" args={["#E6E6FA"]} />
       <OrbitControls ref={orbitControlsRef} />
       <Environment preset="forest" />
-      <Physics gravity={[0, -9.8, 0]}>
-        <Debug />
-        <RigidBody type="fixed">
-          <Plane rotation={[(-Math.PI * 1) / 2, 0, 0]} args={[10, 10]}>
-            <meshStandardMaterial color="blue" />
-          </Plane>
-        </RigidBody>
-
-        <RigidBody ref={rigidBodyRef}>
-          <mesh castShadow position={[-2, 5, 0]}>
-            <sphereGeometry />
-            <meshStandardMaterial color="orange" />
-          </mesh>
-        </RigidBody>
-
-        <RigidBody mass={1} type="dynamic">
-          <group scale={0.01} ref={inuRef}>
-            <InuPart data={curBody?.head} />
-            <InuPart data={curBody?.hands} />
-            <InuPart data={curBody?.pants} />
-            <InuPart data={curBody?.cloth} />
-            <InuPart data={curBody?.shoes} />
-          </group>
-        </RigidBody>
-      </Physics>
-    </>
+      <group scale={[5, 5, 5]}>
+        <Track />
+        <Ground />
+      </group>
+      <RigidBody type="dynamic">
+        <group scale={0.01} ref={inuRef}>
+          <InuPart data={curBody?.head} />
+          <InuPart data={curBody?.hands} />
+          <InuPart data={curBody?.pants} />
+          <InuPart data={curBody?.cloth} />
+          <InuPart data={curBody?.shoes} />
+        </group>
+      </RigidBody>
+    </Physics>
   );
 };
 

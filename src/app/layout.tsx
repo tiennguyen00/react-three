@@ -1,7 +1,9 @@
 "use client";
+
 import { KeyboardControls } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { Perf } from "r3f-perf";
+
 import "./globals.css";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
