@@ -1,5 +1,6 @@
 import { MeshReflectorMaterial } from "@react-three/drei"
 import { useLoader } from "@react-three/fiber"
+import { RigidBody } from "@react-three/rapier"
 import { useEffect, useRef } from "react"
 import { BufferAttribute, Mesh } from "three"
 import { TextureLoader } from "three/src/loaders/TextureLoader"
@@ -31,7 +32,7 @@ function Ground() {
   }, [])
 
   return (
-    <>
+    <RigidBody rotation={[0, 0, 0]} type="dynamic">
       <mesh ref={meshRef2} position={[-2.285, -0.01, -1.325]} rotation-x={-Math.PI * 0.5}>
         <planeGeometry args={[12, 12]} />
         <meshBasicMaterial opacity={0.325} alphaMap={gridMap} transparent={true} color={"white"} />
@@ -60,7 +61,7 @@ function Ground() {
           reflectorOffset={0.02} // Offsets the virtual camera that projects the reflection. Useful when the reflective
         ></MeshReflectorMaterial>
       </mesh>
-    </>
+    </RigidBody>
   )
 }
 

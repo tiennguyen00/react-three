@@ -38,7 +38,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               fov: 75,
               near: 0.1,
               far: 50,
-              position: [0, 3, 3],
+              position: [0, 4, 3],
               frustumCulled: true,
             }}
           >
