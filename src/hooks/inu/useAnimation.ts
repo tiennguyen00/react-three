@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useKeyboardControls } from "@react-three/drei"
+import { useRef, useState } from "react"
 import { Group, Quaternion, Vector3 } from "three"
 import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader"
-import useControlsPlayer from "./useControlsPlayer"
 
 export const dummyAnimationData = {
   "mixamo.com": "/models/inu/ani_mixamo.fbx",
@@ -12,14 +12,11 @@ type AnimationKeysType = keyof typeof dummyAnimationData
 
 const loaderFBX = new FBXLoader()
 
-interface useAnimationProps {
-  controlsPlayer?: ReturnType<typeof useControlsPlayer>
-}
-
-const useAnimation = ({ controlsPlayer }: useAnimationProps) => {
+const useAnimation = () => {
   const [curAnimation, setCurAnimation] = useState<{ name: string; data: Group }>()
   const animationsPool = useRef<any>({})
-
+  const [modeControl, setModeControl] = useState(false)
+  const [_, getKeys] = useKeyboardControls()
   // For character state
   const velocity = new Vector3(0, 0, 0)
   const acceleration = new Vector3(1, 0.125, 20.0)
@@ -67,9 +64,11 @@ const useAnimation = ({ controlsPlayer }: useAnimationProps) => {
       }
     }
   }
-
+  console.log("mode", modeControl)
   // movement
   const changeCharacterState = (delta: number, character: Group) => {
+    const { backward, leftward, rightward, forward, jump, run, mode } = getKeys()
+
     const newVelocity = velocity
     const frameDecceleration = new Vector3(
       newVelocity.x * decceleration.x,
@@ -88,66 +87,74 @@ const useAnimation = ({ controlsPlayer }: useAnimationProps) => {
     const _R = controlObject.quaternion.clone()
 
     const acc = acceleration.clone()
-    if (!controlsPlayer) return
-    if (controlsPlayer.mode) {
-      const speed = 10
+    if (mode) {
+      const timer = setTimeout(() => {
+        setModeControl((v) => !v)
+      }, 1000)
 
-      return
+      return () => clearTimeout(timer)
+      const speed = 10
     }
 
-    if (controlsPlayer.run) {
+    if (modeControl) return
+
+    if (run) {
       acc.multiplyScalar(2.0)
     }
 
-    if (controlsPlayer.forward) {
+    if (forward) {
       newVelocity.z += acc.z * delta
     }
-    if (controlsPlayer.backward) {
+    if (backward) {
       newVelocity.z -= acc.z * delta
     }
-    if (controlsPlayer.left) {
+    if (leftward) {
       _A.set(0, 1, 0)
       _Q.setFromAxisAngle(_A, 4.0 * Math.PI * delta * acceleration.y)
       _R.multiply(_Q)
     }
-    if (controlsPlayer.right) {
+    if (rightward) {
       _A.set(0, 1, 0)
       _Q.setFromAxisAngle(_A, 4.0 * -Math.PI * delta * acceleration.y)
       _R.multiply(_Q)
     }
-    if (controlsPlayer.run) {
+    if (run) {
       newVelocity.z = Math.max(0, newVelocity.z)
     }
 
-    if (controlsPlayer.jump && Math.abs(velocity.y) < 0.01) {
+    if (jump && Math.abs(velocity.y) < 0.01) {
       newVelocity.y += 0.001
       controlObject.position.y += 0.1
     }
 
     controlObject.quaternion.copy(_R)
 
-    const oldPosition = new Vector3()
-    oldPosition.copy(controlObject.position)
+    const moveForward = new Vector3(0, 0, 1)
+    moveForward.applyQuaternion(controlObject.quaternion)
+    moveForward.normalize()
 
-    const forward = new Vector3(0, 0, 1)
-    forward.applyQuaternion(controlObject.quaternion)
-    forward.normalize()
-
-    const sideways = new Vector3(1, 0, 0)
+    const sideways = new Vector3(0, 0, 1)
     sideways.applyQuaternion(controlObject.quaternion)
     sideways.normalize()
 
-    sideways.multiplyScalar(newVelocity.x * delta)
-    forward.multiplyScalar(newVelocity.z * delta)
+    const jumpUp = new Vector3(0, 1, 0)
+    jumpUp.applyQuaternion(controlObject.quaternion)
+    jumpUp.normalize()
 
-    controlObject.position.add(forward)
+    sideways.multiplyScalar(newVelocity.x * delta)
+    moveForward.multiplyScalar(newVelocity.z * delta)
+    jumpUp.multiplyScalar(newVelocity.y * delta)
+
+    controlObject.position.add(moveForward)
     controlObject.position.add(sideways)
+    controlObject.position.add(jumpUp)
 
     character.position.copy(controlObject.position)
     // console.log(controlObject.position);
   }
 
   return {
+    modeControl,
     curAnimation,
     selectAnimation,
     changeCharacterState,

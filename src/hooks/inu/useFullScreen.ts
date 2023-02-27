@@ -1,46 +1,22 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useEffect } from "react";
+import { WebGLRenderer } from "three";
 
-const useFullScreen = () => {
-  const [isFullScreen, setIsFullScreen] = useState(false)
-  const node = useRef<HTMLDivElement>(null)
-
+const useFullScreen = (gl: WebGLRenderer) => {
+  const handleFullScreen = (e: any) => {
+    if (e.key === "f") {
+      gl.domElement.requestFullscreen();
+    }
+    if (e.key === "Escape") {
+      document.exitFullscreen();
+    }
+  };
   useEffect(() => {
-    const handleChange = () => {
-      setIsFullScreen(document.fullscreenElement === node.current)
-    }
-    document.addEventListener("fullscreenchange", handleChange)
+    document.addEventListener("keydown", handleFullScreen);
+
     return () => {
-      document.removeEventListener("fullscreenchange", handleChange)
-    }
-  }, [])
+      document.removeEventListener("keydown", handleFullScreen);
+    };
+  });
+};
 
-  const handleFullScreen = useCallback(() => {
-    try {
-      if (!node.current) return
-      if (document.fullscreenElement === node.current) {
-        return document.exitFullscreen()
-      }
-      return node.current.requestFullscreen()
-    } catch (error) {}
-  }, [])
-
-  const exitFullScreen = useCallback(() => {
-    try {
-      if (document.fullscreenElement === node.current) {
-        return document.exitFullscreen()
-      }
-    } catch (error) {}
-  }, [])
-
-  return useMemo(
-    () => ({
-      isFullScreen,
-      node,
-      handleFullScreen,
-      exitFullScreen,
-    }),
-    [isFullScreen, handleFullScreen, exitFullScreen]
-  )
-}
-
-export default useFullScreen
+export default useFullScreen;
