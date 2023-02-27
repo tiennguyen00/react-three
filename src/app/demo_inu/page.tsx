@@ -2,13 +2,14 @@
 import InuPart from "@/components/models/Inu"
 import useAnimation, { dummyAnimationData } from "@/hooks/inu/useAnimation"
 import useCamera from "@/hooks/inu/useCamera"
+import useControlsPlayer from "@/hooks/inu/useControlsPlayer"
 import useModel, { dummyData } from "@/hooks/inu/useModel"
-import { OrbitControls, Environment } from "@react-three/drei"
+import { OrbitControls, Environment, PointerLockControls } from "@react-three/drei"
 import { useFrame, useThree } from "@react-three/fiber"
 import { Debug, Physics, RigidBody } from "@react-three/rapier"
-import { useControls, folder } from "leva"
+import { folder, useControls } from "leva"
 import { useEffect, useRef } from "react"
-import { AnimationClip, AnimationMixer, Group } from "three"
+import { AnimationClip, AnimationMixer, Group, Vector3 } from "three"
 import Ground from "./Ground"
 import Track from "./Track"
 
@@ -19,7 +20,9 @@ const DemoInuPage = () => {
   const { camera } = useThree()
   const { selectBodyParts, curBody } = useModel()
 
-  const { selectAnimation, curAnimation, changeCharacterState } = useAnimation()
+  const controlsPlayer = useControlsPlayer()
+
+  const { selectAnimation, curAnimation, changeCharacterState } = useAnimation({ controlsPlayer })
   const { updateCameraTarget } = useCamera(camera, orbitControlsRef.current, isDrag.current)
 
   const mixers: AnimationMixer[] = []
@@ -46,7 +49,10 @@ const DemoInuPage = () => {
     if (curBody && mixers.length === Object.keys(curBody).length) mixers.forEach((m) => m.update(delta))
     if (inuRef.current) {
       changeCharacterState(delta, inuRef.current)
-      updateCameraTarget(delta, inuRef.current)
+      if (!controlsPlayer.mode) {
+        updateCameraTarget(delta, inuRef.current)
+        return
+      }
     }
   })
 
@@ -97,12 +103,11 @@ const DemoInuPage = () => {
       },
     },
   })
-
   return (
     <Physics gravity={[0, -9.8, 0]}>
       <Debug />
       <color attach="background" args={["#E6E6FA"]} />
-      <OrbitControls ref={orbitControlsRef} />
+      {controlsPlayer.mode ? <OrbitControls ref={orbitControlsRef} /> : <PointerLockControls ref={orbitControlsRef} />}
       <Environment preset="forest" />
       <group scale={[5, 5, 5]}>
         <Track />

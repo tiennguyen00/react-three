@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import { Group, Quaternion, Vector3 } from "three"
 import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader"
+import useControlsPlayer from "./useControlsPlayer"
 
 export const dummyAnimationData = {
   "mixamo.com": "/models/inu/ani_mixamo.fbx",
@@ -8,20 +9,14 @@ export const dummyAnimationData = {
 }
 
 type AnimationKeysType = keyof typeof dummyAnimationData
-type KeyboardControls = "forward" | "backward" | "left" | "right" | "run" | "jump"
 
 const loaderFBX = new FBXLoader()
 
-let activeAnimation: Record<KeyboardControls, boolean> = {
-  forward: false,
-  backward: false,
-  left: false,
-  right: false,
-  run: false,
-  jump: false,
+interface useAnimationProps {
+  controlsPlayer?: ReturnType<typeof useControlsPlayer>
 }
 
-const useAnimation = () => {
+const useAnimation = ({ controlsPlayer }: useAnimationProps) => {
   const [curAnimation, setCurAnimation] = useState<{ name: string; data: Group }>()
   const animationsPool = useRef<any>({})
 
@@ -73,29 +68,6 @@ const useAnimation = () => {
     }
   }
 
-  const handleKeyPress = useCallback((event: any) => {
-    switch (event.keyCode) {
-      case 87 || 38: //w or arrowup
-        activeAnimation.forward = true
-        break
-      case 65 || 37: //a or arrowleft
-        activeAnimation.left = true
-        break
-      case 83 || 40: //s or arrowdown
-        activeAnimation.backward = true
-        break
-      case 68 || 39: // d or arrowright
-        activeAnimation.right = true
-        break
-      case 32: //spacebar
-        activeAnimation.jump = true
-        break
-      case 16: // shift
-        activeAnimation.run = true
-        break
-    }
-  }, [])
-
   // movement
   const changeCharacterState = (delta: number, character: Group) => {
     const newVelocity = velocity
@@ -116,31 +88,38 @@ const useAnimation = () => {
     const _R = controlObject.quaternion.clone()
 
     const acc = acceleration.clone()
-    if (activeAnimation.run) {
+    if (!controlsPlayer) return
+    if (controlsPlayer.mode) {
+      const speed = 10
+
+      return
+    }
+
+    if (controlsPlayer.run) {
       acc.multiplyScalar(2.0)
     }
 
-    if (activeAnimation.forward) {
+    if (controlsPlayer.forward) {
       newVelocity.z += acc.z * delta
     }
-    if (activeAnimation.backward) {
+    if (controlsPlayer.backward) {
       newVelocity.z -= acc.z * delta
     }
-    if (activeAnimation.left) {
+    if (controlsPlayer.left) {
       _A.set(0, 1, 0)
       _Q.setFromAxisAngle(_A, 4.0 * Math.PI * delta * acceleration.y)
       _R.multiply(_Q)
     }
-    if (activeAnimation.right) {
+    if (controlsPlayer.right) {
       _A.set(0, 1, 0)
       _Q.setFromAxisAngle(_A, 4.0 * -Math.PI * delta * acceleration.y)
       _R.multiply(_Q)
     }
-    if (activeAnimation.run) {
+    if (controlsPlayer.run) {
       newVelocity.z = Math.max(0, newVelocity.z)
     }
 
-    if (activeAnimation.jump && Math.abs(velocity.y) < 0.01) {
+    if (controlsPlayer.jump && Math.abs(velocity.y) < 0.01) {
       newVelocity.y += 0.001
       controlObject.position.y += 0.1
     }
@@ -168,43 +147,9 @@ const useAnimation = () => {
     // console.log(controlObject.position);
   }
 
-  const handleKeyUp = useCallback((event: any) => {
-    switch (event.keyCode) {
-      case 87 || 38: //w or arrowup
-        activeAnimation.forward = false
-        break
-      case 65 || 37: //a or arrowleft
-        activeAnimation.left = false
-        break
-      case 83 || 40: //s or arrowdown
-        activeAnimation.backward = false
-        break
-      case 68 || 39: // d or arrowright
-        activeAnimation.right = false
-        break
-      case 32: //spacebar
-        activeAnimation.jump = false
-        break
-      case 16: // shift
-        activeAnimation.run = false
-        break
-    }
-  }, [])
-  useEffect(() => {
-    document.addEventListener("keydown", handleKeyPress)
-    document.addEventListener("keyup", handleKeyUp)
-
-    return () => {
-      document.removeEventListener("keydown", handleKeyPress)
-      document.removeEventListener("keyup", handleKeyUp)
-    }
-  })
-
   return {
     curAnimation,
     selectAnimation,
-    handleKeyPress,
-    handleKeyUp,
     changeCharacterState,
   }
 }
