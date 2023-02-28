@@ -1,11 +1,11 @@
-"use client";
+"use client"
 
-import { Physics, Debug } from "@react-three/cannon";
-import { KeyboardControls } from "@react-three/drei";
-import { Canvas } from "@react-three/fiber";
-import { Perf } from "r3f-perf";
+import { Physics, Debug } from "@react-three/cannon"
+import { KeyboardControls } from "@react-three/drei"
+import { Canvas } from "@react-three/fiber"
+import { Perf } from "r3f-perf"
 
-import "./globals.css";
+import "./globals.css"
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -36,16 +36,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 frustumCulled: true,
               }}
             >
-              <Physics stepSize={1 / 60} broadphase="SAP" gravity={[0, -2.6, 0]}>
-                <Debug color="blue" scale={1.1}>
-                  {children}
-                </Debug>
-              </Physics>
+              <Physics gravity={[0, -2.6, 0]}>{children}</Physics>
               <Perf position="top-left" />
             </Canvas>
           </KeyboardControls>
         </div>
       </body>
     </html>
-  );
+  )
 }

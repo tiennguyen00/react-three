@@ -4,7 +4,7 @@ import useModel, { dummyData } from "@/hooks/inu/useModel"
 import { useCompoundBody } from "@react-three/cannon"
 import { useFrame } from "@react-three/fiber"
 import { folder, useControls } from "leva"
-import React, { useEffect, useMemo } from "react"
+import React, { useEffect, useMemo, useRef } from "react"
 import { AnimationClip, AnimationMixer } from "three"
 
 interface CharacterProps {
@@ -23,6 +23,18 @@ const Character = ({ characterRef }: CharacterProps) => {
         args: [0.25, 0.5, 0.25],
       },
     ],
+    directionLocal: [0, -1, 0],
+    axleLocal: [1, 0, 0],
+    suspensionStiffness: 60,
+    suspensionRestLength: 0.1,
+    frictionSlip: 5,
+    dampingRelaxation: 2.3,
+    dampingCompression: 4.4,
+    maxSuspensionForce: 100000,
+    rollInfluence: 0.01,
+    maxSuspensionTravel: 0.1,
+    customSlidingRotationalSpeed: -30,
+    useCustomSlidingRotationalSpeed: true,
     mass: 1,
     type: "Kinematic",
   }))
