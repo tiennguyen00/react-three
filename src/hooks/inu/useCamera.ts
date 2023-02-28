@@ -1,19 +1,21 @@
+import { Quad, Triplet } from "@react-three/cannon";
 import { Camera } from "@react-three/fiber";
 import { useEffect, useRef } from "react";
-import { Group, Vector3 } from "three";
+import { Group, Quaternion, Vector3 } from "three";
 
 const useCamera = (camera: Camera, orbitControlsRef: any, isDrag: boolean) => {
   const currentPosition = useRef(new Vector3());
 
-  const updateCameraTarget = (delta: number, character: Group) => {
+  const updateCameraTarget = (delta: number, position: Triplet, quaCollider: Quad) => {
+    const posToVec3 = new Vector3(position[0], position[1], position[2]);
     if (!isDrag) {
-      const idealOffset = new Vector3(0, 1, -1);
-      idealOffset.applyQuaternion(character.quaternion);
-      idealOffset.add(character.position);
+      const idealOffset = new Vector3(0, 0.5, -0.5);
+      idealOffset.applyQuaternion(new Quaternion().fromArray(quaCollider));
+      idealOffset.add(posToVec3);
 
       const idealLookat = new Vector3(0, 10, 70);
-      idealLookat.applyQuaternion(character.quaternion);
-      idealLookat.add(character.position);
+      idealLookat.applyQuaternion(new Quaternion().fromArray(quaCollider));
+      idealLookat.add(posToVec3);
 
       const t = 1.0 - Math.pow(0.001, delta);
 
@@ -22,10 +24,10 @@ const useCamera = (camera: Camera, orbitControlsRef: any, isDrag: boolean) => {
       camera.position.copy(currentPosition.current);
     } else {
       currentPosition.current = camera.position;
-      orbitControlsRef.target = character.position;
+      orbitControlsRef.target = posToVec3;
     }
 
-    camera.lookAt(character.position.x, character.position.y + 0.5, character.position.z);
+    camera.lookAt(position[0], position[1] + 0.2, position[2]);
     camera.updateProjectionMatrix();
   };
 
