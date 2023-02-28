@@ -1,6 +1,7 @@
 import InuPart from "@/components/models/Inu"
 import useAnimation, { dummyAnimationData } from "@/hooks/inu/useAnimation"
 import useModel, { dummyData } from "@/hooks/inu/useModel"
+import { useCompoundBody } from "@react-three/cannon"
 import { useFrame } from "@react-three/fiber"
 import { folder, useControls } from "leva"
 import React, { useEffect, useMemo } from "react"
@@ -14,9 +15,27 @@ const Character = ({ characterRef }: CharacterProps) => {
   const mixers: AnimationMixer[] = useMemo(() => [], [])
   const { selectAnimation, curAnimation, changeCharacterState } = useAnimation()
 
+  // Add the collider shape for the character
+  const [ref, api] = useCompoundBody(() => ({
+    shapes: [
+      {
+        type: "Box",
+        args: [0.25, 0.5, 0.25],
+      },
+    ],
+    mass: 1,
+    type: "Kinematic",
+  }))
+
   useFrame((_, delta) => {
+    if (!characterRef.current) return
     if (curBody && mixers.length === Object.keys(curBody).length) mixers.forEach((m) => m.update(delta))
-    changeCharacterState(delta, characterRef.current)
+    changeCharacterState(delta, characterRef.current, api)
+    api.position.set(
+      characterRef.current.position.x,
+      characterRef.current.position.y + 0.2,
+      characterRef.current.position.z
+    )
   })
 
   useEffect(() => {
@@ -85,7 +104,8 @@ const Character = ({ characterRef }: CharacterProps) => {
     },
   })
   return (
-    <group scale={0.01} ref={characterRef}>
+    <group scale={0.002} ref={characterRef}>
+      <mesh ref={ref as any} />
       <InuPart data={curBody?.head} />
       <InuPart data={curBody?.hands} />
       <InuPart data={curBody?.pants} />
