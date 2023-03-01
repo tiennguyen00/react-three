@@ -1,7 +1,7 @@
 import { PublicApi, Triplet } from "@react-three/cannon";
 import { useKeyboardControls } from "@react-three/drei";
 import { useRef, useState } from "react";
-import { Group, Object3D, Quaternion, Vector3, Event, Euler, Matrix4 } from "three";
+import { Group, Object3D, Quaternion, Vector3, Event, Euler, Matrix4, MathUtils } from "three";
 import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader";
 
 export const dummyAnimationData = {
@@ -70,7 +70,7 @@ const useAnimation = () => {
     collider: Object3D<Event>,
     api: PublicApi,
     posCollider: Triplet,
-    velCollider: Triplet
+    rolCollider: Triplet
   ) => {
     const { backward, leftward, rightward, forward, jump, run } = getKeys();
 
@@ -83,9 +83,7 @@ const useAnimation = () => {
     frameDecceleration.multiplyScalar(delta);
     frameDecceleration.z =
       Math.sign(frameDecceleration.z) * Math.min(Math.abs(frameDecceleration.z), Math.abs(newVelocity.z));
-
     newVelocity.add(frameDecceleration);
-
     const controlObject = collider;
     const _Q = new Quaternion();
     const _A = new Vector3();
@@ -93,54 +91,48 @@ const useAnimation = () => {
 
     const acc = acceleration.clone();
 
+    const euler = new Euler(rolCollider[0], rolCollider[1], rolCollider[2]);
+    const degreeY = MathUtils.radToDeg(euler.y);
+    const degreeX = MathUtils.radToDeg(euler.x);
+
+    const test = new Vector3(
+      Math.sin((degreeY * Math.PI) / 180) * 8,
+      0,
+      Math.cos((degreeY * Math.PI) / 180) * 8 * (degreeX === -180 ? -1 : 1)
+    );
+
     if (run) {
-      acc.multiplyScalar(1.1);
+      test.multiplyScalar(1.5);
     }
 
     if (forward) {
-      newVelocity.z += acc.z * delta;
-      api.velocity.set(0, 0, newVelocity.z * 3);
+      api.velocity.set(test.x, test.y, test.z);
     }
     if (backward) {
-      newVelocity.z -= acc.z * delta;
-      api.velocity.set(0, 0, newVelocity.z * 3);
+      api.velocity.set(-test.x, -test.y, -test.z);
     }
     if (leftward) {
       _A.set(0, 1, 0);
       _Q.setFromAxisAngle(_A, 4.0 * Math.PI * delta * acceleration.y);
       _R.multiply(_Q);
-
-      const oldVelocity = new Vector3().fromArray([velCollider[0], velCollider[1], velCollider[2]]);
-      const inverseRotation = new Vector3()
-        .copy(new Vector3(collider.rotation.x, collider.rotation.y, collider.rotation.z))
-        .multiplyScalar(-1);
-
-      oldVelocity.applyQuaternion(
-        new Quaternion().setFromEuler(new Euler(inverseRotation.x, inverseRotation.y, inverseRotation.z))
-      );
-      api.velocity.set(oldVelocity.x, oldVelocity.y, oldVelocity.z);
     }
     if (rightward) {
       _A.set(0, 1, 0);
       _Q.setFromAxisAngle(_A, 4.0 * -Math.PI * delta * acceleration.y);
       _R.multiply(_Q);
-
-      const oldVelocity = new Vector3().fromArray([velCollider[0], velCollider[1], velCollider[2]]);
-      oldVelocity.applyQuaternion(_Q);
-      api.velocity.copy(oldVelocity);
-
-      // api.velocity.set(0, 0, 1);
     }
     if (run) {
       newVelocity.z = Math.max(0, newVelocity.z);
     }
 
-    if (jump && posCollider[1] < 0.3) {
-      api.velocity.set(0, 1.5, 0);
-    }
+    // if (jump && posCollider[1] < 0.3) {
+    //   api.velocity.set(0, 1.5, 0);
+    // }
 
     api.quaternion.copy(_R);
     controlObject.quaternion.copy(_R);
+
+    // api.quaternion.set(rolCollider[0], rolCollider[1], rolCollider[2], 1);
 
     // character.current.position.copy(controlObject.position);
     // const moveForward = new Vector3(0, 0, 1);
@@ -159,9 +151,9 @@ const useAnimation = () => {
     // moveForward.multiplyScalar(newVelocity.z * delta);
     // jumpUp.multiplyScalar(newVelocity.y * delta);
 
-    // controlObject.position.add(moveForward);
-    // controlObject.position.add(sideways);
-    // controlObject.position.add(jumpUp);
+    // collider.position.add(moveForward);
+    // collider.position.add(sideways);
+    // collider.position.add(jumpUp);
   };
 
   return {

@@ -1,7 +1,7 @@
 import InuPart from "@/components/models/Inu";
 import useAnimation, { dummyAnimationData } from "@/hooks/inu/useAnimation";
 import useModel, { dummyData } from "@/hooks/inu/useModel";
-import { Quad, Triplet, useBox, useCompoundBody } from "@react-three/cannon";
+import { Quad, Triplet, useBox } from "@react-three/cannon";
 import { useFrame } from "@react-three/fiber";
 import { folder, useControls } from "leva";
 import React, { useEffect, useMemo, useRef } from "react";
@@ -18,7 +18,7 @@ const Character = ({ characterRef, thirdPerson, updateCameraTarget }: CharacterP
   const { selectAnimation, curAnimation, changeCharacterState } = useAnimation();
   const posCollider = useRef<Triplet>();
   const quaCollider = useRef<Quad>();
-  const velCollider = useRef<Triplet>();
+  const rolCollider = useRef<Triplet>();
 
   // Add the collider shape for the character
   const [refCollider, apiCollider] = useBox(() => ({
@@ -35,8 +35,8 @@ const Character = ({ characterRef, thirdPerson, updateCameraTarget }: CharacterP
     apiCollider.quaternion.subscribe((v) => {
       quaCollider.current = v;
     });
-    apiCollider.velocity.subscribe((v) => {
-      velCollider.current = v;
+    apiCollider.rotation.subscribe((v) => {
+      rolCollider.current = v;
     });
   }, []);
 
@@ -48,8 +48,8 @@ const Character = ({ characterRef, thirdPerson, updateCameraTarget }: CharacterP
     if (curBody && mixers.length === Object.keys(curBody).length) mixers.forEach((m) => m.update(delta));
 
     // Moving the collider
-    if (refCollider.current && posCollider.current && quaCollider.current && velCollider.current) {
-      changeCharacterState(delta, refCollider.current, apiCollider, posCollider.current, velCollider.current);
+    if (refCollider.current && posCollider.current && quaCollider.current && rolCollider.current) {
+      changeCharacterState(delta, refCollider.current, apiCollider, posCollider.current, rolCollider.current);
 
       // Try to update the character pos following to the refCollider
       characterRef.current.position.copy(
