@@ -4,6 +4,7 @@ import { OrbitControls, Stats } from "@react-three/drei"
 import { Canvas } from "@react-three/fiber"
 import Ground from "./Ground"
 import Light from "./Light"
+import Player from "./Player"
 import Tree from "./Tree"
 
 const DemoTutorial = () => {
@@ -24,7 +25,8 @@ const DemoTutorial = () => {
         <axesHelper args={[2]} />
         <gridHelper args={[10, 10]} />
         <Light />
-        <Tree boundary={50} count={20} />
+        <Tree boundary={100} count={20} />
+        <Player />
         <OrbitControls />
         <Ground />
       </Canvas>

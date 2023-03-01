@@ -24,10 +24,53 @@ function Tree({ boundary, count }: TreeProps) {
     }
   })
 
+  const boxIntersect = (
+    minAx: number,
+    minAz: number,
+    maxAx: number,
+    maxAz: number,
+    minBx: number,
+    minBz: number,
+    maxBx: number,
+    maxBz: number
+  ) => {
+    let aLeftOfB = maxAx < minBx
+    let aRightOfB = minAx > maxBx
+    let aAboveB = minAz > maxBz
+    let aBelowB = maxAz < minBz
+    return !(aLeftOfB || aRightOfB || aAboveB || aBelowB)
+  }
+
+  const isOverlapping = (index: number, tree: TreeType, trees: TreeType[]) => {
+    const minTargetX = tree.position.x - tree.box / 2
+    const maxTargetX = tree.position.x + tree.box / 2
+    const minTargetZ = tree.position.z - tree.box / 2
+    const maxTargetZ = tree.position.z + tree.box / 2
+    for (let i = 0; i < trees.length; i++) {
+      let minChildX = trees[i].position.x - trees[i].box / 2
+      let maxChildX = trees[i].position.x + trees[i].box / 2
+      let minChildZ = trees[i].position.z - trees[i].box / 2
+      let maxChildZ = trees[i].position.z + trees[i].box / 2
+      if (
+        boxIntersect(minTargetX, minTargetZ, maxTargetX, maxTargetZ, minChildX, minChildZ, maxChildX, maxChildZ) &&
+        i !== index
+      ) {
+        return true
+      }
+    }
+    return false
+  }
+
+  const newPosition = (box: number, boundary: number) => {
+    return boundary / 2 - box / 2 - ((boundary - box) * Math.round(Math.random() * 100)) / 100
+  }
+
   const updatePosition = (treeArray: TreeType[], boundary: number) => {
     treeArray.forEach((tree, index) => {
-      tree.position.x = Math.random() * 100
-      tree.position.z = Math.random() * 100
+      do {
+        tree.position.x = newPosition(tree.box, boundary)
+        tree.position.z = newPosition(tree.box, boundary)
+      } while (isOverlapping(index, tree, treeArray))
     })
     setTrees(treeArray)
   }
