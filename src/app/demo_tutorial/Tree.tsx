@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from "react"
 import { useGLTF } from "@react-three/drei"
 import { useLoader } from "@react-three/fiber"
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader"
+import { useBox } from "@react-three/cannon"
 
 interface TreeProps {
   boundary: number
