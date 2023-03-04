@@ -1,6 +1,5 @@
-"use client"
-import Container from "@/components/Container"
+"use client";
 
 export default function Home() {
-  return <></>
+  return <></>;
 }
